@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-# bandrip.rb v0.2.0
-# 2020-09-25
+# bandrip.rb v0.3.0
+# 2020-10-30
 
 require 'uri'
 require 'net/http'
@@ -15,7 +15,7 @@ gemfile do
 end
 
 class Bandrip
-  VERSION = '0.2.0'
+  VERSION = '0.3.0'
   USER_AGENT = 'Mozilla/5.0 (Android; Mobile; rv:40.0) Gecko/40.0 Firefox/40.0'
   WAIT_TIME = 10
   
@@ -96,9 +96,9 @@ class Bandrip
      url = "https://#{artist}.bandcamp.com/album/#{album}"
      puts "Getting album info from #{url}"
      document = Nokogiri::HTML(http_get(url))
-     document.css("#track_table tr[itemtype='http://www.schema.org/MusicRecording']").each do |tr|
+     document.css("#track_table tr.track_row_view").each do |tr|
        number = tr['rel'].to_s.sub('tracknum=', '').to_i
-       if link = tr.at_css(".title a[itemprop='url']")['href'] and link.start_with?('/track/')
+       if link = tr.at_css(".title a")['href'] and link.start_with?('/track/')
          download_track(artist, link[7..-1], number: number)
        end
      end
@@ -109,7 +109,7 @@ class Bandrip
    end
    
    def parse_artist_name(document)
-     document.at_css("#name-section .albumTitle span[itemprop='byArtist']").text.strip
+     document.at_css("#name-section .albumTitle span a[href^=https]").text.strip
    end
    
    def parse_track_name(document)
